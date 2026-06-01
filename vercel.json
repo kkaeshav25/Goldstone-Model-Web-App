@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "env": {
+    "VITE_API_URL": "https://goldstone-api.onrender.com"
+  },
+  "github": {
+    "enabled": true,
+    "autoAlias": true
+  },
+  "regions": ["iad1"]
+}
