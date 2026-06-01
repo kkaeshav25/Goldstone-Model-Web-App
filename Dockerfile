@@ -32,6 +32,10 @@ COPY *.py ./
 # Copy built frontend from builder stage
 COPY --from=frontend-builder /app/dist ./dist
 
+# Copy startup script and make executable
+COPY start.sh ./
+RUN chmod +x ./start.sh
+
 # Create non-root user for security (optional)
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
