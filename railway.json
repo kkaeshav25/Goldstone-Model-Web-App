@@ -4,7 +4,7 @@
     "builder": "dockerfile"
   },
   "deploy": {
-    "startCommand": "sh -c \"uvicorn api:app --host 0.0.0.0 --port $PORT\"",
+    "startCommand": "sh -c \"python - <<'PY'\nimport importlib,traceback,sys\ntry:\n    importlib.import_module('api')\n    print('API_IMPORT_OK')\nexcept Exception:\n    traceback.print_exc()\n    sys.exit(1)\nPY\nuvicorn api:app --host 0.0.0.0 --port $PORT\"",
     "restartPolicyMaxRetries": 5,
     "healthchecks": {
       "enabled": true,
