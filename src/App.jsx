@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from "recharts";
 
 // ─── CONFIG ────────────────────────────────────────────────────────────────
-const API = "http://localhost:8000";
+// Use environment variable if available, otherwise default to localhost
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const REGIME_OPTIONS = [
   { value: "full_autocracy",          label: "Full Autocracy" },
