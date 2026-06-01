@@ -1,42 +1,48 @@
-# Multi-stage build: Frontend + Backend in single container
-FROM node:20-alpine AS frontend-build
+# Multi-stage build: Frontend builder
+FROM node:20-alpine AS frontend-builder
 
-WORKDIR /app/frontend
-COPY package*.json .
-RUN npm ci
-
-COPY . /app
 WORKDIR /app
+
+# Copy frontend dependencies and source
+COPY package*.json ./
+COPY src/ ./src/
+COPY index.html vite.config.js eslint.config.js ./
+COPY public/ ./public/
+
+# Install and build
+RUN npm ci
 RUN npm run build
 
-# Backend stage
+# Python backend runtime
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Install system dependencies (curl for healthcheck, build tools for pip)
+RUN apt-get update && apt-get install -y --no-install-recommends curl build-essential && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy Python dependencies
+# Copy Python dependencies and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy all application files
-COPY . .
+# Copy backend code
+COPY *.py ./
 
 # Copy built frontend from builder stage
-COPY --from=frontend-build /app/dist ./public
+COPY --from=frontend-builder /app/dist ./dist
 
-# Create non-root user for security
-RUN useradd -m appuser && chown -R appuser:appuser /app
+# Create non-root user for security (optional)
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Expose port
 EXPOSE 8000
 
-# Start API server (serves built frontend + API)
+# Start API server
 CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+

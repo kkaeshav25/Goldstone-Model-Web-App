@@ -32,7 +32,9 @@ Usage
 from __future__ import annotations
 
 from typing import Optional
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 
@@ -80,10 +82,23 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",      # Local dev (Vite)
+        "http://localhost:3000",      # Alternative local dev
+        "https://goldstone-model.vercel.app",  # Vercel frontend
+        "https://*.railway.app",      # Railway deployment
+        "https://*.onrender.com",     # Render deployment
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
+
+# Mount static files (built frontend)
+# Check if dist folder exists (deployment environment)
+dist_path = Path(__file__).parent / "dist"
+if dist_path.exists():
+    app.mount("/", StaticFiles(directory=str(dist_path), html=True), name="static")
 
 
 # ---------------------------------------------------------------------------
