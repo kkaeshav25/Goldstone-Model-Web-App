@@ -4,7 +4,7 @@
     "builder": "dockerfile"
   },
   "deploy": {
-    "startCommand": "sh -c \"python - <<'PY'\nimport importlib,traceback,sys\ntry:\n    importlib.import_module('api')\n    print('API_IMPORT_OK')\nexcept Exception:\n    traceback.print_exc()\n    sys.exit(1)\nPY\nuvicorn api:app --host 0.0.0.0 --port $PORT\"",
+    "startCommand": "sh -c \"echo PWD: $(pwd) ; echo '--- /app listing ---' ; ls -la /app || true ; echo '--- ENV PYTHONPATH ---' ; echo \"$PYTHONPATH\" ; echo '--- python sys.path and /app contents ---' ; python -c \"import sys,os; print('EXE:', sys.executable); print('SYSPATH:', sys.path); print('LS_APP:', os.listdir('/app'))\" || true ; python - <<'PY'\nimport importlib,traceback,sys\ntry:\n    importlib.import_module('api')\n    print('API_IMPORT_OK')\nexcept Exception:\n    traceback.print_exc()\n    sys.exit(1)\nPY\nuvicorn api:app --host 0.0.0.0 --port $PORT\"",
     "restartPolicyMaxRetries": 5,
     "healthchecks": {
       "enabled": true,
